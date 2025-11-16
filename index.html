@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نظام ترتيب المواعيد</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>نظام ترتيب المواعيد</h1>
+    <p>اختر الأسماء ثم اضغط "بدء الجولة" لإنشاء جدول من 08:00 ص إلى 04:30 م.</p>
+  </header>
+
+  <main class="container">
+    <!-- جولة دقيقة واحدة مع مؤقت دائري -->
+    <section class="card">
+      <h2>إدارة الجولة (8 ساعات)</h2>
+      <p class="muted">عند البدء سيُقفل الزر لمدة 8 ساعات.</p>
+      <div class="round-wrap">
+        <div class="round-actions" style="display:flex; gap:.5rem; align-items:center;">
+          <button id="startRoundBtn" class="primary btn-lg">بدء الجولة</button>
+        </div>
+        <div class="round-visual">
+          <div id="roundRing" class="timer-ring">
+            <div class="timer-inner">
+              <div id="roundTimerText" class="timer-text">00:00</div>
+            </div>
+          </div>
+          <div id="roundStatus" class="round-status" style="text-align:center; margin-top:.5rem;">لا توجد جولة نشطة.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- اختيار الأسماء وبداية الجدولة (توزيع متساوي + ترتيب عشوائي دائماً) -->
+    <section class="card">
+      <h2>الأسماء الثابتة</h2>
+      <p class="muted">اضغط على الاسم للتحديد/الإلغاء. يمكنك اختيار عدة أسماء.</p>
+      <div class="row" style="justify-content: space-between; gap: .75rem; margin-bottom:.5rem;">
+        <div class="row" style="gap:.5rem;">
+          <button id="chipsSelectAllBtn" class="ghost">تحديد الكل</button>
+          <button id="chipsClearBtn" class="ghost">إلغاء التحديد</button>
+        </div>
+        <div class="muted">مختار: <span id="selectedCount">0</span></div>
+      </div>
+      <div id="fixedNames" class="chips"></div>
+      <div id="message" class="message" aria-live="polite"></div>
+      <p class="muted">الوضع الافتراضي: توزيع متساوي على اليوم، ترتيب عشوائي، من 08:00 ص إلى 04:30 م.</p>
+    </section>
+
+    <!-- النتائج -->
+    <section class="card span-2">
+      <h2>النتيجة</h2>
+      <div class="row" style="justify-content: space-between; gap:.5rem;">
+        <span id="copyMsg" class="muted"></span>
+        <button id="copyTableBtn" class="ghost">نسخ الجدول</button>
+      </div>
+      <div class="table-wrap">
+        <table id="resultTable">
+          <thead>
+            <tr>
+              <th style="width:60%">الاسم</th>
+              <th>الوقت</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <small>يتم حفظ الأسماء على هذا الجهاز فقط (LocalStorage).</small>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
