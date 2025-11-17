@@ -227,7 +227,7 @@
       [names[i], names[j]] = [names[j], names[i]];
     }
 
-    // Fixed time range and equal distribution
+    // Fixed time range and equal distribution across contiguous intervals
     const start = parseTimeToMinutes(DEFAULT_START);
     const end = parseTimeToMinutes(DEFAULT_END);
     if(isNaN(start) || isNaN(end) || end <= start){
@@ -238,15 +238,18 @@
     const duration = end - start;
     const slots = [];
     if(names.length === 1){
-      slots.push({ name: names[0], time: start });
+      slots.push({ name: names[0], start, end });
     } else {
-      const step = duration / (names.length - 1); // include both start and end
+      const step = duration / names.length; // equal contiguous chunks covering entire range
+      // build boundaries to avoid drift and to pin edges
+      const boundaries = new Array(names.length + 1);
+      boundaries[0] = start;
+      for(let k=1;k<names.length;k++){
+        boundaries[k] = Math.round(start + k * step);
+      }
+      boundaries[names.length] = end;
       for(let i=0;i<names.length;i++){
-        let t;
-        if(i === 0) t = start;
-        else if(i === names.length - 1) t = end;
-        else t = Math.round(start + i * step);
-        slots.push({ name: names[i], time: t });
+        slots.push({ name: names[i], start: boundaries[i], end: boundaries[i+1] });
       }
     }
 
@@ -266,11 +269,23 @@
     for(const s of slots){
       const tr = document.createElement('tr');
       const tdName = document.createElement('td');
-      const tdTime = document.createElement('td');
+      const tdStart = document.createElement('td');
+      const tdEnd = document.createElement('td');
       tdName.textContent = s.name;
-      tdTime.textContent = minutesTo12h(s.time);
+      if(typeof s.start === 'number' && typeof s.end === 'number'){
+        tdStart.textContent = minutesTo12h(s.start);
+        tdEnd.textContent = minutesTo12h(s.end);
+      } else if(typeof s.time === 'number') {
+        // backward compatibility with older payloads
+        tdStart.textContent = minutesTo12h(s.time);
+        tdEnd.textContent = '';
+      } else {
+        tdStart.textContent = '';
+        tdEnd.textContent = '';
+      }
       tr.appendChild(tdName);
-      tr.appendChild(tdTime);
+      tr.appendChild(tdStart);
+      tr.appendChild(tdEnd);
       resultTableBody.appendChild(tr);
     }
   }
@@ -278,10 +293,10 @@
   async function copyTable(){
     const rows = Array.from(resultTableBody.querySelectorAll('tr')).map(tr => {
       const tds = tr.querySelectorAll('td');
-      return [tds[0]?.textContent || '', tds[1]?.textContent || ''];
+      return [tds[0]?.textContent || '', tds[1]?.textContent || '', tds[2]?.textContent || ''];
     });
     if(rows.length === 0){ if(copyMsgEl) copyMsgEl.textContent = 'لا يوجد جدول لنسخه.'; return; }
-    const header = ['الاسم','الوقت'];
+    const header = ['الاسم','البداية','النهاية'];
     const tsv = [header, ...rows].map(r => r.join('\t')).join('\r\n');
     try {
       if(navigator.clipboard && navigator.clipboard.writeText){
